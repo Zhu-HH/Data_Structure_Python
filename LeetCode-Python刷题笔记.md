@@ -487,7 +487,133 @@ class Solution:
 
 #### 算法实现
 
+
+
+### 第十一题  盛最多水的容器
+
+#### 算法描述
+
+1. 采用双指针形式,左指针i 右指针j.
+2. 结果 等于 下标 j-i 乘 对应指针值的最小值
+3. 当左指针的值小于右指针的时候 左指针 向后移动  否则 右指针向前移动
+4. 当 左指针 大于右指针的时候就 说明结束了循环
+
+#### 算法实现
+
+##### C++ 算法实现
+
+```c++
+class Solution {
+public:
+    int maxArea(vector<int>& height) {
+        int res = 0;
+        for (int i = 0,j = height.size() - 1;i < j;){
+            res = max(res,(j-i)*min(height[i],height[j]));
+            if ( height[i] < height[j]) i++;else j--;
+        }
+        return res;
+    }
+};
+```
+
 ##### Python 算法实现
+
+```python
+class Solution:
+    def maxArea(self, height: List[int]) -> int:
+        i,j,res = 0,len(height)-1,0
+        while i<j:
+            res = max(res,min(height[i],height[j])*(j-i))
+            if height[i] < height[j]:
+                i += 1
+            else:
+                j -= 1
+        return res
+```
+
+### 第十二题 整数转罗马数字
+
+#### 算法描述
+
+1. 找规律,提前建立好一一对应关系,然后方便去映射
+    + `_dict = {1000:'M',900:'CM',500:'D',400:'CD',100:'C',90:'XC',50:'L',40:'XL',10:'X',9:'IX',5:'V',4:'IV',1:'I'}`
+2.  让 num 依次对 keys[i] 取余,若有结果K,说明需要K个对应的value,最后 对 num 减去 K*keys[i] 
+3. 一直重复2  直到 num =0 结束 
+
+#### 算法实现
+
+##### C++ 算法实现
+
+```c++
+class Solution {
+public:
+    string intToRoman(int num) {
+        string res = "";
+        int keys[] = {1000,900,500,400,100,90,50,40,10,9,5,4,1};
+        string values[] = {"M","CM","D","CD","C","XC","L","XL","X","IX","V","IV","I"};
+        for(int i=0;i<13;i++){
+            while(num >= keys[i]){
+                num -= keys[i];
+                res += values[i];
+            }
+        }
+        return res;
+    }
+};
+```
+
+
+
+##### Python算法实现
+
+```python
+class Solution:
+    def intToRoman(self, num: int) -> str:
+        _dict = {1000:'M',900:'CM',500:'D',400:'CD',100:'C',90:'XC',50:'L',40:'XL',10:'X',9:'IX',5:'V',4:'IV',1:'I'}
+        res = ""
+        while num:
+            for _ in _dict.keys():
+                __ = num // _
+                if __:
+                    res += (_dict[_] * __)
+                    num -= (_ * __)
+        return res
+```
+
+ ### 第十三题 罗马数字转整数
+
+#### 算法描述
+
+是上一题的逆运用 整体思路差不多
+
+需要对字符串s 判断一下  当前字符串 和 下一个字符串组成的新字符串是否存在映射表中
+
+#### 算法实现
+
+##### Python 算法实现 
+
+```python
+class Solution:
+    def romanToInt(self, s: str) -> int:
+        _dict,i,res,_len = {"M":1000,"CM":900,"D":500,"CD":400,"C":100,"XC":90,"L":50,"XL":40,"X":10,"IX":9,"V":5,"IV":4,"I":1},0,0,len(s)
+        while i < _len:
+            if _dict.get(s[i]):
+                if _dict.get(s[i:i+2]):
+                    res += (_dict[s[i:i+2]])
+                    i += 2
+                else:
+                    res += _dict[s[i]]
+                    i += 1
+        return res
+```
+
+
+
+##### C++ 算法实现
+
+```
+
+```
 
 
 
@@ -524,7 +650,7 @@ class Solution:
 
 #### 算法描述
 
-dp思想来解题就会很快
+dp思想来解题就会很快,但还不会
 
 #### 算法实现
 
@@ -544,7 +670,10 @@ class Solution:
         return _max
 ```
 
+### 第一零三一题 两个非重叠子数组最大和 每日一题  没做出来
+#### 算法描述
 
+#### 算法实现
 
 ### 第二四一八题 按身高排序
 
