@@ -615,6 +615,295 @@ class Solution:
 
 ```
 
+### 第十四题 最长的公共子串
+
+#### 算法描述
+
+1. 枚举的思想,判断每个字符串的第一位是否一致 如果一致就进行第二位的判断 如果连第一位都不一致 那就直接空
+
+#### 算法实现
+
+##### Python 算法实现
+
+```python
+class Solution:
+    def longestCommonPrefix(self, strs: List[str]) -> str:
+        if not strs:return strs
+        i = 0
+        res = ""
+        while  i < len(strs[0]):
+            _ = strs[0][i]
+            for  data in strs:
+                if i >= len(data) or data[i] != _  :
+                    return res
+            res += _
+            i += 1
+        return res
+```
+
+
+
+##### C++ 算法实现
+
+```c++
+class Solution {
+public:
+    string longestCommonPrefix(vector<string>& strs) {
+        string res;
+        if (strs.size() == 0) return res;    // 特判传入参数为 空字符串
+
+        for(int i = 0;;i++){
+            if (i >= strs[0].size()) return res;   // 以 数组第一个为枚举对象 判断其他的字符串是否都有这个字符
+            char _ = strs[0][i];                       // 待检查字符
+            for(auto & str : strs)
+                if (str[i] != _ || i >= str.size())
+                    return res;
+            res += _;
+        }
+        return res;
+    }
+};
+```
+
+### 第十五题  三数之和 
+
+#### 算法描述
+
+1. 起初打算暴力来解决问题,两个指针指向的数据先求和 在取反 判断取反后的数据是否存在nums中,存在 则找到一组三元组并记录三个元素的下标 _i ndex 以及 取反后的数据下标 _append   超时  时间复杂度 O(n²)
+
+2. 先对nums 进行排序, 三个指针 i j k  i<j<k 的规则,当 i 固定后 需要满足 三个指针相加为0  且在排序后的基础上  j 指针向后移动 k指针必定需要向前移动才可以满足三个相加为0 
+
+    
+
+#### 算法实现
+
+##### Python 算法实现
+
+```python
+class Solution:
+    def threeSum(self, nums: List[int]) -> List[List[int]]:
+
+        _len = len(nums)
+        _res = []
+        if(not nums or _len<3):  return _res
+        nums.sort()
+
+        for index in range(_len):
+            # 若 nums[i]>0: 因为已经排序好,所以后面不可能有三个数加和等于 0,直接返回结果.
+            if(nums[index] > 0):  
+                return _res
+            # 因为已经排序好,会出现相同值的情况,当前索引与上一个索引值一样,就不需要在进行判断一次,目的去除重复解.
+            if(index > 0 and nums[index] == nums[index - 1]):
+                continue
+            L = index + 1
+            R = _len - 1
+            while(L < R):
+                if(nums[index] + nums[L] + nums[R] == 0):
+                    _res.append([nums[index],nums[L],nums[R]])
+                    # 第二波 去除重复解 为了跳过那些
+                    while(L < R and nums[L] == nums[L+1]):
+                        L += 1
+                    while(L < R and nums[R] == nums[R-1]):
+                        R -= 1
+                    L += 1
+                    R -= 1
+                elif(nums[index] + nums[L] + nums[R] > 0):
+                    R -= 1
+                else:
+                    L += 1
+        return _res
+```
+
+
+
+##### Python 暴力算法实现  308测试集 超时...
+
+```python
+class Solution:
+    def threeSum(self, nums: List[int]) -> List[List[int]]:
+        _list = []
+        _set = set()
+        for i in range(len(nums)):
+            for j in range(i+1,len(nums)):
+                k = ~(nums[i] + nums[j]) + 1
+                if k in nums :
+                    _k = nums.index(k)
+                    if i!=j and  i!= _k and j != _k and nums[i] +nums[j] + k ==0:
+                        _data = [nums[i],nums[j],k]
+                        _data.sort()
+                        if str(_data) not in _set:
+                            _set.add(str(_data))
+                            _list.append(_data)
+
+        
+  
+        return _list
+```
+
+
+
+### 第十六题 最接近的三数之和
+
+#### 算法描述
+
+1. 与上题类似,一个索引index,双指针算法
+
+2. 先对nums 进行升序排序
+3. 特判
+    +  如果target 大于等于排序后 最后三个之和 就直接返回最后三个之和 
+    + target 小于等于 排序后前三个之和 类似
+4. index 作为 第一个数,负责从后往前计算,由于题干明确不会出现相同解,所有不需要上题类似的检查重复解
+5. L 左指针 R 右指针  计算出 三个数之和 与 target的大小  再计算出二者之间 数轴上的距离
+6. 如果出现了当前距离大于新计算的距离 说明出现了更符合条件的三数之和, 更新距离值 三数之和 
+7. 更新过后需要继续检查是否存在更好的解，需要判断三数之和 和 target的大小关系 进行 L++ 或 R -- 的操作
+
+#### Python算法实现
+
+```python
+class Solution:
+    def threeSumClosest(self, nums: List[int], target: int) -> int:
+        _len = len(nums)
+        _min_length = 10**7
+        # _res = []   # 存放 返回结果的 三个元素
+        nums.sort()
+        _ans = 0
+        # 特判两种情况 
+        if target >= sum(nums[-3:]): return sum(nums[-3:])
+        if target <= sum(nums[:3]): return sum(nums[:3])
+        for index in range(_len):
+            L = index + 1
+            R = _len - 1
+            while(L < R):
+                # 计算 三数之和 与 target的差值
+                _sum = nums[index] + nums[L] + nums[R]
+                # _max _min 代表三数之和 和 target中 在数轴上,谁更靠右(大)谁更靠左(小) 
+                _max = _sum if _sum > target else target
+                _min = _sum + target - _max
+                if(_max == _min): return _sum
+                # 判断 是否需要更新 三数之和 和 target 数轴上的最小距离
+                if (_min_length > _max - _min):
+                    _min_length = _max - _min
+                    _ans = _sum
+                    # _res = [nums[index] , nums[L] , nums[R]]
+                if(_sum > target):
+                    R -= 1
+                else:
+                    L += 1
+        return _ans
+```
+
+
+
+### 第十七题  电话号码的字母组合
+
+#### 算法描述
+
+1. 建立映射表
+2. 对上一个元素列表中所有值都进行当前列表的 依次追加
+
+#### Python 算法实现
+
+##### 非递归算法
+
+```Python
+class Solution:
+    def letterCombinations(self, digits: str) -> List[str]:
+        _dict = {"2":["a","b","c"],"3":["d","e","f"],"4":["g","h","i"],"5":["j","k","l"],"6":["m","n","o"],"7":["p","q","r","s"],"8":["t","u","v"],"9":["w","x","y","z"]}
+        if not digits: return []
+        digits_list = list(digits)
+        _sum = _dict[digits_list[0]]
+        _init = []
+        for index in range(1,len(digits_list)):
+            for i in range(len(_sum)):
+                for j in _dict[digits_list[index]]:
+                    _init.append(_sum[i]  + j)
+            _sum = _init[:]
+            _init = []
+        
+        return _sum
+```
+
+
+
+##### 递归算法
+
+```python
+
+
+            
+```
+
+### 第十八题 四数之和
+
+#### 算法描述
+
+1. 与 三数之和 很类似
+2. 四数之和 需要 两个固定的 一个 index  一个 j = index + 1    两个指针 L  R   
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def fourSum(self, nums: List[int], target: int) -> List[List[int]]:
+        nums.sort()
+        _len = len(nums)
+        _res = []
+        for index in range(_len):
+            # 第一波结果去重
+            if (index  and nums[index] == nums[index - 1]): continue
+            for j in range(index + 1,_len):
+                # 第二波结果去重
+                if (j > index + 1 and nums[j] == nums[j - 1]): continue
+                L = j + 1
+                R = _len - 1
+                while(L < R):
+                    _sum = nums[index] + nums[j]+ nums[L]+ nums[R]
+                    if (_sum == target):
+                        _res.append([nums[index] , nums[j] , nums[L] , nums[R]])
+                        while (L < R and nums[L] == nums[L + 1]): L += 1
+                        while(L < R and nums[R] == nums[R - 1]): R -= 1
+                        L += 1
+                        R -= 1
+                    elif _sum > target:
+                        R -= 1
+                    else:
+                        L += 1
+
+
+        return _res
+```
+
+### 第十九题 删除链表倒数第N个结点
+
+#### 算法描述
+
+感慨万千,曾经面试中灵机应变可以想出来的题.现在却想不起来...
+
+1. 初始化几个指针  左 右 头结点
+2. 先让右指针移动N次, 然后 左指针和 右指针 一起向后移动,直到右指针的next 为空.此时左指针对应的位置就是待删除的结点 
+
+#### Python 算法实现
+
+```python
+# Definition for singly-linked list.
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+class Solution:
+    def removeNthFromEnd(self, head: Optional[ListNode], n: int) -> Optional[ListNode]:
+        left = right = dummy = ListNode(next=head)
+        # 没事先走几步
+        for _ in range(n):
+            right = right.next
+        while right.next:
+            left = left.next
+            right = right.next
+        left.next = left.next.next
+        return dummy.next
+
+```
+
 
 
 ### 第二十题 有效的括号  简单 
