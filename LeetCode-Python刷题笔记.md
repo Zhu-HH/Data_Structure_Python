@@ -130,6 +130,8 @@ public:
 
 ### 第三题  无重复字符的最长子串 中等
 
+> 同向双指针  滑动窗口   题三
+
 #### 算法描述
 
 1. 将字符串转为列表,方便操作.
@@ -182,6 +184,25 @@ class Solution:
                     previous += 1
         return _length
 ```
+##### Python算法实现3 : 同向指针 
+
+```python
+class Solution:
+    def lengthOfLongestSubstring(self, s: str) -> int:
+        _res = 0
+        cnt = Counter()  # hashmap key-> char value -> int
+        left = 0
+        for right,c in enumerate(s):
+            cnt[c] += 1
+            while (cnt[c] > 1):
+                cnt[s[left]] -= 1
+                left += 1
+            _res = max(_res,right - left + 1)
+        return _res
+```
+
+
+
 ##### C++ 算法实现 
 ```c++
 class Solution {
@@ -489,7 +510,9 @@ class Solution:
 
 
 
-### 第十一题  盛最多水的容器
+### 第十一题  盛最多水的容器 
+
+> 接雨水问题 题一
 
 #### 算法描述
 
@@ -667,6 +690,8 @@ public:
 
 ### 第十五题  三数之和 
 
+> 相向双指针 题二
+
 #### 算法描述
 
 1. 起初打算暴力来解决问题,两个指针指向的数据先求和 在取反 判断取反后的数据是否存在nums中,存在 则找到一组三元组并记录三个元素的下标 _i ndex 以及 取反后的数据下标 _append   超时  时间复杂度 O(n²)
@@ -682,25 +707,27 @@ public:
 ```python
 class Solution:
     def threeSum(self, nums: List[int]) -> List[List[int]]:
-
+        
         _len = len(nums)
         _res = []
         if(not nums or _len<3):  return _res
         nums.sort()
 
-        for index in range(_len):
-            # 若 nums[i]>0: 因为已经排序好,所以后面不可能有三个数加和等于 0,直接返回结果.
+        for index in range(_len - 2):
+            # 若 nums[i]>0:因为已经排序好,所以后面不可能有三个数加和等于 0,直接返回结果.
             if(nums[index] > 0):  
                 return _res
+            # 如果当前值 和最大值 次大值相加依旧小于0  说明当前这个值可以跳过,以为下一个值可能会比当前这个值大
+            if (nums[index] + nums[-2] + nums[-1] < 0): continue
             # 因为已经排序好,会出现相同值的情况,当前索引与上一个索引值一样,就不需要在进行判断一次,目的去除重复解.
-            if(index > 0 and nums[index] == nums[index - 1]):
+            if(index > 0 and nums[index]==nums[index - 1]):
                 continue
             L = index + 1
             R = _len - 1
             while(L < R):
                 if(nums[index] + nums[L] + nums[R] == 0):
                     _res.append([nums[index],nums[L],nums[R]])
-                    # 第二波 去除重复解 为了跳过那些
+                    # 第二波 去除重复解 
                     while(L < R and nums[L] == nums[L+1]):
                         L += 1
                     while(L < R and nums[R] == nums[R-1]):
@@ -933,6 +960,408 @@ class Solution:
         return stack == []
 ```
 
+### 第二十一题  合并两个有序链表
+
+#### 算法描述
+
+1. 因为已经有序 直接可以比较两个指针所指向的值的大小关系,、
+2. 每次会比较出一个较小值 然后可以将这个值进行追加到头结点上,然后 较小值所在的链表的指针往后移动
+3. 直到出现一条链表结束 然后 将链表尾指针指向剩下另一条链表
+    + 当有一个链表为空的时候 就把另一条链表接在尾指针后面
+
+#### Python 算法实现
+
+```Python
+# Definition for singly-linked list.
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+class Solution:
+    def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:
+        if not list1: return list2
+        if not list2: return list1
+        dummy =  curr = ListNode()
+        
+        while (list1 and list2):
+            if list1.val <= list2.val:
+                curr.next = list1
+                list1 = list1.next
+            else:
+                curr.next = list2
+                list2 = list2.next
+            curr = curr.next
+        
+        curr.next = list1 if list1 else list2
+        return dummy.next
+```
+
+
+
+### 第 二十二题  括号生成
+
+#### 算法描述
+
+1. 关于括号的一些描述
+    + 1. 在任意前缀中 “(” 的个数 >= “)” 的个数
+        2. 在任意前缀中 左右括号个数相等
+2. 每组合法的括号都有 2*n  位,可以一位一位分析
+    + 当 左括号个数 <n  可以填充一个左括号
+    + 当 右括号<n 且 左括号的个数大于右括号 可以填充右括号
+
+#### Python 递归算法实现
+
+```python
+class Solution:
+    # 任意子缀中 左括号的个数 大于等于 右括号的个数
+    _res = []
+    def dfs(self,_len,left_c,right_c,_seq):
+        if left_c == _len and right_c == _len:
+            Solution._res.append(_seq)
+        else:
+            if left_c < _len:
+                self.dfs(_len,left_c + 1,right_c,_seq + "(")
+            if right_c < _len and left_c > right_c:
+                self.dfs(_len,left_c,right_c + 1,_seq + ")")
+
+    def generateParenthesis(self, n: int) -> List[str]:
+        Solution._res = []
+        self.dfs(n,0,0,"")
+        return Solution._res
+```
+
+
+
+### 第二十三题  [合并 K 个升序链表](https://leetcode.cn/problems/merge-k-sorted-lists/)
+
+#### 算法描述
+
+1. 实现一  分治算法 
+    + 1. 先创建一个res的结点， 每次合并 res 和数组中新的数组
+    + 2. 合并算法就是 第二十一题类似
+2. 实现二 归并算法
+3. 实现三 最小堆
+    + 1. 
+
+#### Python 分治算法实现
+
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+
+    def mergeTwoList(self,l1,l2): # 第二十一题类似
+        move = dummy = ListNode()
+        while (l1 and l2):
+            if l1.val < l2.val:
+                move.next = l1
+                l1 = l1.next
+            else:
+                move.next = l2
+                l2 = l2.next
+            move = move.next
+        move.next = l1 if l1 else l2
+        return dummy.next
+
+    def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:
+        _res = None      # 关键一
+        if not lists:return _res
+        for list_i in lists:
+            _res = self.mergeTwoList(_res,list_i)   # 关键二
+        return _res
+```
+
+
+
+#### Python 归并算法实现
+
+
+
+#### Python 最小堆算法实现
+
+```python
+class Solution:
+    def mergeKLists(self, lists: List[ListNode]) -> ListNode:
+        import heapq        # 调用堆
+        minHeap = []        # 存放堆
+        # 建堆
+        for listi in lists: 
+            while listi:
+                heapq.heappush(minHeap, listi.val)   # 把listi中的数据逐个加到堆中
+                listi = listi.next
+        dummy = ListNode(0) #构造虚节点
+        move = dummy
+        while minHeap:
+            move.next = ListNode(heapq.heappop(minHeap)) #依次弹出最小堆的数据
+            move = move.next
+        return dummy.next 
+```
+
+#### Python 数组实现
+
+```python
+class Solution:
+    def mergeKLists(self, lists: List[ListNode]) -> ListNode:
+        # 创建一个空的头节点
+        dummy = ListNode(None)
+        # 创建一个指针指向头节点
+        cur = dummy
+        # 创建一个存储结点的列表
+        node_list = []
+        # 遍历列表中的每一个链表
+        for l in lists:
+            # 遍历每一个链表
+            while l:
+                # 将每一个结点都放入node_list中
+                node_list.append(l)
+                # 继续遍历每一个链表
+                l = l.next
+        # 将node_list按照结点值从小到大排序
+        node_list.sort(key=lambda x:x.val)      # <-- 闪光点！！！！
+        # 遍历node_list
+        for node in node_list:
+            # 将排序后的结点放入dummy头节点的后面，并更新cur指针
+            cur.next = node
+            cur = cur.next
+        # 返回dummy头节点的下一个结点
+        return dummy.next
+```
+
+### 第二十四题 [两两交换链表中的节点](https://leetcode.cn/problems/swap-nodes-in-pairs/)
+
+#### 算法描述
+
+1. 拥有 相邻的两个指针 left 和 right 
+
+#### Python算法实现
+
+
+
+
+
+### 第二十五题 
+
+
+
+### 第三十三题
+
+
+
+### 第 三十四题       [在排序数组中查找元素的第一个和最后一个位置](https://leetcode.cn/problems/find-first-and-last-position-of-element-in-sorted-array/)
+
+> 二分查找 实现 [] [)   (]  以及 >=    >    <=   <  实现
+
+#### 算法描述
+
+#### Python 实现二分
+
+1. 实现 左闭右闭区间 二分查找算法
+
+    + ```python
+        def lower_bound(nums: List[int], target: int) -> int:
+            left = 0
+            right = len(nums) - 1
+            while left <=  right:    # 闭区间 [left,right]
+                mid = (left + right) // 2
+                if nums[mid] < target:
+                    left = mid + 1
+                else:
+                    right = mid - 1
+            return left
+        ```
+
+2. 实现 左闭右开区间 二分查找算法
+
+    + ```python
+        def lower_bound2(nums: List[int], target: int) -> int:
+            left = 0
+            right = len(nums)
+            while left <  right:    # 闭区间 [left,right)
+                mid = (left + right) // 2
+                if nums[mid] < target:
+                    left = mid + 1
+                else:
+                    right = mid
+            return left
+        ```
+
+3. 实现 开区间 二分查找算法
+
+    + ```python
+        def lower_bound3(nums: List[int], target: int) -> int:
+            left = -1
+            right = len(nums)
+            while left + 1 <  right:    # 开区间 (left,right)
+                mid = (left + right) // 2
+                if nums[mid] < target:
+                    left = mid
+                else:
+                    right = mid
+            return right
+        ```
+
+4. 实现 大于 小于 小于等于 大于等于
+
+    + ```python
+        # 有序数组上的二分查找分为4中,≥ > ≤ <  可以相互转换
+        # >x : 可以看为 ≥(x + 1)
+        # <x : 可以看为 ≥(x) - 1
+        # ≤ : 可以看完 (>x) - 1
+        ```
+
+        
+
+#### Python 算法实现
+
+```python
+ def lower_bound(nums: List[int], target: int) -> int:
+    left = 0
+    right = len(nums) - 1
+    while left <=  right:    # 闭区间 [left,right]
+        mid = (left + right) // 2
+        if nums[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return left
+
+class Solution:
+    def searchRange(self, nums: List[int], target: int) -> List[int]:
+        start = lower_bound(nums,target)
+        if start == len(nums) or nums[start] != target:return [-1,-1]
+        # 求最后一次出现target的位置 等价于 求 >=target+1 第一次出现的位置 再减1 
+        end = lower_bound(nums,target + 1) -1
+        return [start,end]
+```
+
+
+
+#### Python 耍贱的实现
+
+```python
+class Solution:
+    def searchRange(self, nums: List[int], target: int) -> List[int]:
+        if target in nums:
+            return [nums.index(target),nums.index(target)+ nums.count(target) - 1]
+        return [-1,-1]
+```
+
+
+
+### 第四十二题 困难版 接最多雨水问题
+
+> 接雨水问题 题二
+
+#### 算法描述
+
+1.  算出每个水桶左右两侧最大值 然后计算出结果
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def trap(self, height: List[int]) -> int:
+
+        # 找出每个方块左侧最大值 和 右侧最大值 
+        # 计算出每个方块上可以盛多少水 = min(左侧最大值,右侧最大值) - 方块高度
+        _res = 0
+        _len = len(height)
+        pre_max = [0] * _len
+        # 对于左边最大高度数组来讲 第一个元素没有左边最大高度 不如初始化为本身
+        pre_max[0] = height[0]
+        for i in range(1,_len):
+            pre_max[i] = max(pre_max[i - 1],height[i])
+        
+        suf_max = [0] * _len
+        # 右侧最大高度 同理 
+        suf_max[-1] = height[-1]
+        # 数组本身从 _len - 1开始 每次 -1 但因为第一个数已经填充了 就从倒数第二个开始
+        for i  in range(_len-2,-1,-1):
+            suf_max[i] = max(suf_max[i + 1],height[i])
+        
+        for h,pre,suf in zip(height,pre_max,suf_max):
+            _res += min(pre,suf)  - h
+        return _res
+```
+
+#### Python算法实现 未完成
+
+```python
+class Solution:
+    def trap(self, height: List[int]) -> int:
+        _res = 0
+        _len = len(height)
+        left = 0
+        while (left < _len):
+            right = left + 1
+            while (right < _len and height[right] < height[left]): right += 1
+            if right < _len and right - left - 1:
+                _all = (right - left - 1)* min(height[right] , height[left])
+                _close = sum(height[left + 1 : right])	
+                _res += _all - _close
+                left = right
+            else:
+                left += 1
+        return _res
+```
+
+
+
+### 第一百五十三题  [寻找旋转排序数组中的最小值](https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array/)
+
+#### 算法描述
+
+1. 取数组中最后一个元素，这个元素只有两种性质,要么是最小值,要么位置在最小值的右侧
+2. 二分数组从 0 到 n-2 开始 若 mid 大于 最后一个元素 说明最小值一定在mid的左侧 反之在mid右侧
+3.  
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def findMin(self, nums: List[int]) -> int:
+        left = -1
+        right = len(nums) - 1
+        while left + 1< right :
+            mid  = (left + right) // 2
+            if nums[mid] > nums[-1]:
+                left = mid
+            else: 
+                right = mid 
+        return nums[right]
+```
+
+
+
+### 第一百六十二题  [寻找峰值](https://leetcode.cn/problems/find-peak-element/)
+
+> 二分查找 题二 思维跨度大 难理解
+
+#### 算法描述
+
+1. 为什么采用二分的开区间算法呢？
+2. 
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def findPeakElement(self, nums: List[int]) -> int:
+        # [0,n-2]
+        # [-1,n-1]
+        left ,right= -1 ,len(nums) - 1
+        while left + 1 < right:
+            mid = (left + right) // 2
+            if nums[mid] < nums[mid + 1]:
+                left = mid
+            else:
+                right = mid
+        return right
+```
+
 
 
 ### 第六七四题 最长连续递增序列
@@ -959,10 +1388,76 @@ class Solution:
         return _max
 ```
 
+### 第一六七题 两数之和 || 
+
+> 相向双指针 题一
+
+#### 算法描述
+
+1. 借助题干条件,数组已经先按照非递减的顺序排序,
+2. 左指针指向第一个数 右指针指向最后一个数
+    + 若 两个指针指向的数 == target 返回指针位置
+    + 若 两指针之和大于target 说明右指针指向的数大需要向前移动来获取一个次大值
+    + 若 之和小于target 说明 左指针 需要向后移动来获取下一个较大值
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def twoSum(self, numbers: List[int], target: int) -> List[int]:
+        L = 0
+        R = len(numbers) - 1
+        while (L < R):
+            _sum = numbers[L] + numbers[R]
+            if _sum == target:
+                return [L + 1,R + 1]
+            elif _sum > target:
+                R -= 1
+            else:
+                L += 1
+```
+
+
+
+
+
 ### 第一零三一题 两个非重叠子数组最大和 每日一题  没做出来
+
 #### 算法描述
 
 #### 算法实现
+
+### 第二零九题 长度最小的子数组    
+
+> 同向双指针  滑动窗口   题一
+
+#### 算法描述
+
+1. 同向双指针 left right 初始都是0 指向同一个元素
+2. 当 两个指针所包含的所有元素相加 小于 target 时, right + 1 
+3. 若 累加和 大于等于 target 说明 已枚举的元素中，已经满足了条件,但需要继续执行，来检查最小长度
+    + 满足条件 sum -= 左指针指向的数据 并 更新长度 以及 左指针后移一步  顺序不能颠倒
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def minSubArrayLen(self, target: int, nums: List[int]) -> int:
+        _len = len(nums)
+        _sum = left = 0
+        _res = 10**5 + 1 
+        if sum(nums) < target: return 0
+        if sum(nums) == target: return _len
+        for right,num in enumerate(nums):
+            _sum += num
+            while (_sum >= target):
+                _sum -= nums[left]
+                _res = min(_res,right - left + 1)
+                left += 1
+        return _res
+```
+
+
 
 ### 第二四一八题 按身高排序
 
@@ -1000,4 +1495,39 @@ class Solution:
     def sortPeople(self, names: List[str], heights: List[int]) -> List[str]:
         return [name for height, name in sorted(zip(heights, names), reverse=True)]
 ```
+
+### 第七一三题 乘积小于K 的所有子数组
+
+> 同向双指针  滑动窗口   题二
+
+#### 算法描述 
+
+1. 算法整体思想与 题一 类似
+2. left right 指针指向的数据累乘若小于k 就将 两个指针的数据copy到新的数组
+3. 若大于k  说明 两个指针之间的数据不满足条件了以及之后也更不可能满足条件(数组中每个元素都大于等于1)
+4. 枚举  以右指针为准则 左指针为向后移动
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def numSubarrayProductLessThanK(self, nums: List[int], k: int) -> int:
+        if k <= 1: return 0
+        _product = 1
+        left = 0
+        _res = 0
+        for right,num in enumerate(nums):
+            _product *= num
+            while _product >= k :
+                _product //= nums[left]
+                left += 1
+            _res += (right - left + 1)
+        return _res
+```
+
+
+
+
+
+
 
