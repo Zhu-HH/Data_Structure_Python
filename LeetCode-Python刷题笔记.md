@@ -1134,19 +1134,395 @@ class Solution:
 
 #### 算法描述
 
-1. 拥有 相邻的两个指针 left 和 right 
+0. 本题发现,头结点会发生变化,可以新建立一个虚拟头结点
+
+1. 拥有头结点move指针以及 相邻的两个指针 left 和 right ,三个指针,move指针指向要交换的两个结点的前一个结点
+1. 交换结束后move指针变成交换前 left指针指向的数
 
 #### Python算法实现
 
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def swapPairs(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        dummy = move = ListNode(next = head)    # 建立虚拟头结点并指向head
+        while move.next and move.next.next:
+            left = move.next
+            right = move.next.next
+            # 开始交换结点！
+            move.next = right
+            left.next = right.next
+            right.next = left
+            # 开始进行下两个结点的交换 left 为 交换后 更靠近下一个结点的指针
+            move = left 
+        return dummy.next
+```
+
+#### Python 递归算法实现   暂未明白 ~
+
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def swapPairs(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        if head==None or head.next==None:
+            return head
+        next = head.next
+        head.next = self.swapPairs(next.next)
+        next.next = head
+        return next
+```
 
 
 
+### 第二十五题   [ K 个一组翻转链表](https://leetcode.cn/problems/reverse-nodes-in-k-group/)
 
-### 第二十五题 
+#### 算法描述
+
+1. 与上题类似,需要虚拟一个头结点 dummy = move 
+2. 首先去判断从 move结点开始计算 是否存在K个元素 存在下一步 不存在就返回
+    + 1. 将 K 个中 除两边元素之外所有元素的指针调转方向
+    + 2. 
 
 
 
-### 第三十三题
+#### Python 算法实现 - 数组存放K个指针方案
+
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def reverseKGroup(self, head: Optional[ListNode], k: int) -> Optional[ListNode]:
+        dummy = move = p = ListNode(next = head)
+        # p 是向前确定k个元素的指针 move 是k个元素为一组的前一个指针
+        cnt = 0
+        while p.next:
+            _list = []
+            while cnt < k and p.next:
+                _ = p.next
+                _list.append(_)
+                p = p.next
+                cnt += 1
+            if cnt == k:
+                # 交换k组中 第一个 和最后一个元素的指针  _list[0].next = _list[-1].next
+                move.next = _list[-1]
+                _list[0].next = _list[-1].next
+                cnt -= 1
+                while cnt:
+                    _list[cnt].next = _list[cnt - 1]
+                    cnt -= 1
+                p = move = _list[0]
+            else:
+                # cnt 不足k个 返回
+                break
+        return dummy.next
+```
+
+#### Python 算法实现 高效算法  灵神视频
+
+```python
+
+```
+
+
+
+### 第二十六题 [删除有序数组中的重复项](https://leetcode.cn/problems/remove-duplicates-from-sorted-array/)
+
+####  算法描述
+
+双指针 pre 指向真正的待填充数据, suf 指向检查字符串是否与 pre指针相同 
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def removeDuplicates(self, nums: List[int]) -> int:
+        pre = suf = 0
+        while suf < len(nums):
+            if nums[suf] != nums[pre]:
+                pre += 1
+                nums[pre] = nums[suf]
+            suf += 1
+        
+        return pre + 1
+```
+
+
+
+### 第二十七题  [移除元素](https://leetcode.cn/problems/remove-element/)
+
+#### 算法描述 
+
+与上体类似 不过 suf 与 val比较而不是与 pre比较
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def removeElement(self, nums: List[int], val: int) -> int:
+        while(val in nums):
+            nums.pop(nums.index(val))
+        return len(nums)
+```
+
+
+
+### 第二十八题 [找出字符串中第一个匹配项的下标](https://leetcode.cn/problems/find-the-index-of-the-first-occurrence-in-a-string/)
+
+#### 算法描述
+
+KMP 算法吧
+
+利用Python特性进行解题
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def strStr(self, haystack: str, needle: str) -> int:
+        if needle in haystack:
+            return haystack.index(needle)
+        return -1
+```
+
+#### Python KMP 算法实现 待续
+
+```python
+
+```
+
+
+
+### 第二十九题 [ 两数相除    未解决](https://leetcode.cn/problems/divide-two-integers/)
+
+#### 算法描述
+
+1. 数学题 
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def divide(self, dividend: int, divisor: int) -> int:
+        is_minus = False
+        #
+        if (dividend < 0 and divisor > 0) or (dividend > 0 and divisor < 0): is_minus = True 
+        dividend, divisor = abs(dividend),abs(divisor)
+        ext = [ pow(2,i) * divisor for i in range(31)]
+        _res = 0
+        for i in range(len(ext)-1,-1,-1):
+            if dividend >= ext[i]:
+                dividend -= ext[i]
+                _res += 1 << i
+        if is_minus: return -_res
+        return res if -2**31 <= res <= 2**31-1 else 2**31-1
+    
+    
+    
+
+class Solution:
+    def divide(self, dividend: int, divisor: int) -> int:
+        # x << i, 左移相当于 x* 2^i
+        # x >> i, 右移相当于 x/ 2^i
+        if abs(dividend) < abs(divisor): return 0
+        limit = 2**31 - 1
+        neg = (dividend <0) != (divisor < 0)
+        dividend, divisor = abs(dividend), abs(divisor)
+        res, div, temp = 0, divisor, 1
+        while dividend >= divisor:
+            while dividend > (div << 1):
+                div <<= 1
+                temp <<= 1
+            dividend -= div
+            div = divisor
+            res += temp
+            temp = 1
+        res = -res if neg else res
+        return res if -2**31 <= res <= 2**31-1 else limit
+```
+
+
+
+### 第三十题 [串联所有单词的子串](https://leetcode.cn/problems/substring-with-concatenation-of-all-words/)
+
+#### 算法描述
+
+1. 滑动窗口  枚举 实现
+2. 将 words 中的元素 放入dict中 初始化每个出现次数都为1 
+3. 枚举从 0 到 len(s) - len(words[0]) + 1  ，将 整个s 分为len(s) // len(words[0]) 段来处理
+4. 每段又分为 len(words[0]) * len(words) 个小组,而每个小组为肯定出现在dict中 
+5. 最后统计dict中value 为0  则记录索引 不为0  开始下一处索引
+
+#### Python 算法实现   暂时不优化了~~
+
+```python
+class Solution:
+    def findSubstring(self, s: str, words: List[str]) -> List[int]:
+        if not s :return []
+        _len, w_list_len, w_str_len, _res = len(s), len(words),len(words[0]), []
+        words_dict = {}
+        start = 0 
+        for _ in words:
+            words_dict[_] = words_dict.get(_,0) + 1
+        for start in range(_len - (w_list_len * w_str_len) + 1):
+        # while start < _len - (w_list_len * w_str_len) + 1:
+            # 每次都重新获取一个备份
+            check_words_dict = words_dict.copy()
+            # 将s 按照 串联子串长度 分为一段一段 
+            check_strs = s[start:start + w_list_len * w_str_len]
+            # 检查每段中的每组(长度为 w_str_len) 是否存在 dict中
+            check_index = 0
+            while check_strs[check_index:check_index + w_str_len] in check_words_dict and check_words_dict[check_strs[check_index:check_index + w_str_len]] > 0:
+                check_words_dict[check_strs[check_index:check_index + w_str_len]] -= 1
+                # 更新检查索引位置
+                check_index += w_str_len
+            if sum(check_words_dict.values()) == 0:
+                _res.append(start)
+            #     start += w_str_len
+            # else:
+            #     start = start + 1
+        return _res
+```
+
+
+
+### 第三十一题  [下一个排列](https://leetcode.cn/problems/next-permutation/)
+
+#### 算法描述
+
+1. 又是思维题目, 题目描述为 在给定的数组中,寻找一个非降序子数组 [a,b] (b是b之后的元素中最大的元素，a是比b小的相邻元素  ),然后再其后找一个大于第一个元素的最小元素 调换二者位置,然后将后面重新按照升序排列即可
+2. 1. 首先 先找到第一个开始降序的位置
+
+#### Python算法实现
+
+```python
+class Solution:
+    def nextPermutation(self, nums: List[int]) -> None:
+        # 1. 先找到一个开始降序的位置
+        _len, start, k = len(nums), -1, len(nums) - 1
+        # 从后往前找 第一组升序的位置 k为最大的元素,也就是第k个元素比第k-1 个元素要大 
+        # 如 1,3,5,4,2   需要找的就是 元素5 索引k = 2 为  
+        while(k > 0 and nums[k - 1] >= nums[k]): k -= 1
+        # 特殊情况 遇到是降序的数组 直接颠倒所有元素即可
+        # 即从尾到头 都找不到一个满足 nums[k]> nums[k-1 ] 的元素
+        if (k <= 0 ): 
+            nums.reverse()
+        else:
+            index = k
+            # 找 从k之后 第一个 小于等于k-1的 元素 索引位置 index 那么 index -1 就是 大于第k-1 个元素的最小元素
+            while(index < _len and nums[index] > nums[ k - 1]): index +=1
+            nums[index - 1 ],nums[k - 1] = nums[k - 1],nums[index - 1]
+            # 从 最大元素 位置开始 到 数组结束 进行 升序 
+            start = k
+            end = _len -1
+            while start < end:
+                nums[start],nums[end] = nums[end],nums[start]
+                start += 1
+                end -= 1
+```
+
+#### 优化之后算法
+
+```python
+class Solution:
+    def nextPermutation(self, nums: List[int]) -> None:
+        # 1. 先找到一个开始降序的位置
+        _len, start, k = len(nums), -1, len(nums) - 1
+        # 从后往前找 第一组升序的位置 k为最大的元素,也就是第k个元素比第k-1 个元素要大 
+        # 如 1,3,5,4,2   需要找的就是 元素5 索引k = 2 为  
+        # while(k > 0 and nums[k - 1] >= nums[k]): k -= 1
+        for k in range(_len - 1,-1,-1):
+            if nums[k] <= nums[k- 1]:
+                continue
+            else:
+                # 找到了k 索引
+                # 特殊情况 遇到是降序的数组 直接颠倒所有元素即可
+                # 即从尾到头 都找不到一个满足 nums[k]> nums[k-1 ] 的元素
+                if (k <= 0 ): 
+                    nums.reverse()
+                    break
+                else:
+                    # 找 从k之后 第一个 小于等于k-1的 元素 索引位置 index 那么 index -1 就是 大于第k-1 个元素的最小元素
+                    index = k
+                    while(index < _len and nums[index] > nums[ k - 1]): index +=1
+                    nums[index - 1 ],nums[k - 1] = nums[k - 1],nums[index - 1]
+                    # 从 最大元素 位置开始 到 数组结束 进行 升序 
+                    end = _len -1
+                    while k < end:
+                        nums[k],nums[end] = nums[end],nums[k]
+                        k += 1
+                        end -= 1
+                    break
+```
+
+
+
+### 第三十二题   [最长有效括号](https://leetcode.cn/problems/longest-valid-parentheses/)   竞赛题 难
+
+#### 算法描述
+
+1. 括号题的两个重要性质
+    + 其一, 任何合法的子缀中 左右括号数量相等
+    + 其二, 合法的子缀中,左括号的数量大于等于右括号的数量
+2. 我们可以先找到第一处括号不合法的位置,然后将其断开.这是因为在此处之前已经不合法了,合法的不会横跨这一段
+3. 依次划分出所有的不合法的位置 然后将其拆分开来,其中每一段除最后一个右括号以外都满足左括号个数大于等于右括号个数 也就是除了这个右括号以外,在此之前的所有右括号都可以找到对应的左括号
+4. 有3可以得知,当遇到一个右括号且栈 没有左括号的时候就说明这段已经结束了需要从下一段寻找
+5. 
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def longestValidParentheses(self, s: str) -> int:
+        # start 为有效括号开始索引的前一个位置记录
+        # 也可理解为 start为 遇到最后一个右括号时,与之对应的左括号的前一个位置 也就是每一段的结尾
+        # 若 start 设为开始索引 后面需要减去start后 再多加1的操作 麻烦
+        start = -1
+        stack = []
+        _res = 0
+        for i in range(len(s)):
+            if s[i] == '(':
+                # 若为左括号 将下标存入栈内
+                stack.append(i)
+            else:
+                # 遇到右括号检查栈是否有左括号位置
+                if len(stack):
+                    stack.pop()
+                    # 再次检查是否还有左括号，如果还有,说明必有一个右括号等着
+                    if len(stack):
+                        _res = max(_res,i - stack[-1])
+                    else:
+                        # 说明当前这个右括号与之匹配的已经消除了
+                        _res = max(_res,i - start)
+                else:
+                    # 遇到右括号发现栈空 说明是 违规的字符串 重新记录start
+                    # 遇到了 右括号数量大于左括号数量时的右括号索引
+                    start = i
+        return _res
+```
+
+
+
+### 第三十三题   [搜索旋转排序数组](https://leetcode.cn/problems/search-in-rotated-sorted-array/)
+
+#### 算法描述
+
+1. 多段升序的数组,数组其中一段满足所有的值都大于nums[0] 另一端所有元素都满足小于nums[len(nums) - 1] 这样的特性, 找出这个分界点 依次使用两次二次进行
+2. 
+
+#### Python 算法实现
+
+
 
 
 
@@ -1249,6 +1625,142 @@ class Solution:
         return [-1,-1]
 ```
 
+### 第三十五题
+
+#### 算法描述
+
+#### Python 算法实现
+
+
+
+### 第三十六题   [有效的数独](https://leetcode.cn/problems/valid-sudoku/)
+
+#### 算法描述
+
+1. ·用长度为9 的列表来充当1-9,若出现6 就在索引为6处 设为True 若在一行中出现了索引为true的说明改行直接出现了重复数字
+2. 列也是 
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def isValidSudoku(self, board: List[List[str]]) -> bool:
+        # 用来保存 1-9 是否存在过
+        _list = []
+
+        # 检查行 
+        for row in range(9):
+            _list = [False] * 9
+            for cow in range(9):
+                if  board[row][cow] != '.':
+                    # 减 1  是因为 索引是从 0 开始的  所以向前移一位
+                    _ = int(board[row][cow]) - 1
+                    if _list[_]:return False
+                    _list[_] = True
+        
+        # 检查列
+        for row in range(9):
+            _list = [False] * 9
+            for cow in range(9):
+                # 此处是 列 行  
+                if  board[cow][row] != '.':
+                    _ = int(board[cow][row]) - 1
+                    if _list[_]:return False
+                    _list[_] = True
+        
+        # 检查小方块
+        for row in range(0,9,3):
+            for cow in range(0,9,3):
+                _list = [False] * 9
+                for x in range(3):
+                    for y in range(3):
+                        if board[row + x][cow + y] != '.':
+                            _ = int(board[row + x][cow + y])  - 1
+                            if _list[_]: return False
+                            _list[_] = True
+        
+        return True
+```
+
+
+
+### 第三十七题    [解数独](https://leetcode.cn/problems/sudoku-solver/)   困难
+
+#### 算法描述
+
+
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def solveSudoku(self, board: List[List[str]]) -> None:
+        def dfs(board, x, y):
+            # 先移动纵坐标
+            if y >= 9:
+                x += 1
+                y = 0
+            if x >= 9:
+                return True
+            if board[x][y] != '.': 
+                return dfs(board, x, y + 1)
+            else:
+                for i in range(9):
+                    # 先判断 要枚举的数 是否已经存在 列 行 宫 里面了
+                    if (not row[x][i]) and (not cow[y][i]) and (not cell[x//3][y//3][i]):
+                        board[x][y] = str(1 + i)
+                        # print(board[x][y])
+                        # 设为True 表示 对应的第i+1 个数 填充进去了
+                        row[x][i] = cow[y][i] = cell[x//3][y//3][i] = True
+                        if dfs(board, x, y + 1):
+                            return True
+                        else:
+                            board[x][y] = '.'
+                            # 填充失败 继续下一步
+                            row[x][i] = cow[y][i] = cell[x//3][y//3][i] =  False
+            return False
+        """
+        Do not return anything, modify board in-place instead.
+        """
+        # 保存 每行 每列 每宫1-9 每个数字 用来后续判断某个数是否已经使用过,不可以重复使用
+        row = [[0 for i in range(9)] for j in range(9)]
+        cow = [[0 for i in range(9)] for j in range(9)]
+        cell = [[[0 for i in range(9)] for j in range(3)] for k in range(3)]
+
+        # 将 board 保存进
+        for i in range(9):
+            for j in range(9):
+                if board[i][j] != '.':
+                    # 转换为0-8 对应列表的索引为 1-9
+                    _ = int(board[i][j]) - 1
+                    row[i][_] = cow[j][_] = cell[i//3][j//3][_] =  True
+        
+        # dfs
+        dfs(board,0,0)
+```
+
+
+
+### 第三十八题
+
+
+
+### 第三十九题
+
+
+
+
+
+### 第四十题
+
+
+
+
+
+### 第四十一题
+
+
+
 
 
 ### 第四十二题 困难版 接最多雨水问题
@@ -1310,6 +1822,101 @@ class Solution:
 
 
 
+### 第六十九题 [ x 的平方根 ](https://leetcode.cn/problems/sqrtx/)  
+
+#### 算法描述
+
+1. 题目可以翻译为  从0 开始 到 x ,中间必定有一个数的平方是 x 或 平方小于等于x
+2. 换句话来说  找 0 到x 中  mid*mid 小于等于 x  直接模板
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def mySqrt(self, x: int) -> int:
+        # 类似于二分找 某个值的平方 <= x
+        #  小于等于   模板一 情形三
+        left, right = 0,x
+        while left <= right:
+            mid = left + (right - left) // 2
+            if mid * mid <= x:
+                left = mid + 1
+            else:
+                right = mid - 1
+            
+        return right
+```
+
+### [剑指 Offer 53 - II. 0～n-1中缺失的数字](https://leetcode.cn/problems/que-shi-de-shu-zi-lcof/)
+
+#### 算法描述
+
+1. 索引从0 开始 判断 第 i个索引的位置是会否为i
+2. 如果是i 说明 i的左侧满足条件 需要后移动
+3. 如果 大于i 说明 i的左侧发生的变化 目标值在左边 移动 right
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def missingNumber(self, nums: List[int]) -> int:
+        # 索引从0 开始 判断 第 i个索引的位置是会否为i
+        # 如果是i 说明 i的左侧满足条件 需要后移动
+        # 如果 大于i 说明 i的左侧发生的变化 目标值在左边 移动 right
+        left, right = 0, len(nums) -1 
+        while left <= right:
+            mid = left + (right - left) // 2
+            if nums[mid] == mid:
+                left = mid + 1
+            elif nums[mid] > mid:
+                right = mid - 1
+        return left
+```
+
+### 第八十一题 [搜索旋转排序数组 II](https://leetcode.cn/problems/search-in-rotated-sorted-array-ii/)
+
+#### Python算法实现
+
+```python
+class Solution:
+    def search(self, nums: List[int], target: int) -> bool:
+        # 先二分 找中间断点
+        # 断点使 左侧到断点处 左闭右闭都是不降序 断点到数组结尾 ‘’左‘’开右闭区间 也是不降速
+        # 测试集虽然过了 但不是真真意义上的 先找二分找断点 再二分找答案。。。
+        left,right = 0,len(nums) - 1
+        while left <= right:
+            mid = left + (right - left) // 2
+            if nums[mid] == target or nums[right] == target:
+                return True
+            elif nums[mid] < nums[right]:
+                right = mid
+            elif nums[mid] > nums[right]:
+                left = mid + 1
+            else:
+                right -= 1
+        # 运行到此处,若没有返回True,但找到了断点   right,nums[right]
+        # return right,nums[right]
+        if nums[0] < target:
+            left = 0
+        elif nums[0] > target:
+            right = len(nums) - 1
+        else:
+            return True
+
+        # 已确定target大致区间  在一段不降序区间 开始普通二分查找
+        while left <= right:
+            mid = left + (right - left) // 2
+            if nums[mid] == target:
+                return True
+            elif nums[mid] < target:
+                left = mid + 1
+            else:
+                right = mid - 1
+        return False if left == len(nums) or nums[left] != target else True
+```
+
+
+
 ### 第一百五十三题  [寻找旋转排序数组中的最小值](https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array/)
 
 #### 算法描述
@@ -1332,6 +1939,60 @@ class Solution:
             else: 
                 right = mid 
         return nums[right]
+```
+
+#### Python 算法实现2
+
+```python
+class Solution:
+    def findMin(self, nums: List[int]) -> int:
+        # 相当于 33题 先找到断点 也就是 nums中最大值
+        # 当退出循环时,left 指向 满足 大于第一个元素的最大元素的下一位
+        # right 为最大元素的位置
+        # 判断 right 是不是最后一位,是说明整个nums是升序的 最小的是 nums[0]
+        left , right = 0, len(nums) - 1
+        while left <= right:
+            mid = left + (right - left) // 2
+            if nums[mid] < nums[0]:
+                right = mid - 1
+            else:
+                left = mid + 1
+        return nums[left] if right != len(nums) - 1 else nums[0]
+```
+
+
+
+### 第一百五十四题 [寻找旋转排序数组中的最小值 II](https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array-ii/)
+
+#### 算法描述
+
+...
+
+#### Python 算法实现
+
+```python
+class Solution:
+    def findMin(self, nums: List[int]) -> int:
+        # 旋转数组 也就三种情况  先升序小部分,然后 剩下的所有元素都小于nums[0]
+        # 升序一大部分, 剩下的小部分元素的最后一个 nums[len(nums) - 1]小于 num[0]
+        # 再 就是 一直升序状态 最小值为 nums[0] 
+        left , right = 0 , len(nums) - 1
+        while left <= right:
+            mid = left + (right - left) // 2
+            # 因为原数组是 升序的！！！！ 可以保证  right的左边 小于等于 right
+            if nums[mid] < nums[right]:
+                right = mid
+            elif nums[mid] > nums[right]:
+                left = mid + 1
+            else:
+                # 此时 mid 和 right 指向的数据都一样  那说明 right 和 mid 是 重复值 
+                # 删除去right 也无妨 ~
+                right -= 1
+        # 退出循环时
+        # 1. 有 一直升序的 nums[0] 为最小值, left为答案
+        # 2. 有 一部分升序 在升序的  最小值在 断点处下一个位置    left 还是答案
+        # 3. 全为降序 最后一个元素为最小值 left为答案
+        return nums[left]
 ```
 
 
@@ -1360,6 +2021,26 @@ class Solution:
             else:
                 right = mid
         return right
+```
+
+### 第二百七十八题 [第一个错误的版本](https://leetcode.cn/problems/first-bad-version/)
+
+#### Python算法实现
+
+```python
+# The isBadVersion API is already defined for you.
+# def isBadVersion(version: int) -> bool:
+
+class Solution:
+    def firstBadVersion(self, n: int) -> int:
+        left , right = 1, n
+        while left < right:
+            mid = left + (right - left) // 2
+            if isBadVersion(mid):
+                right = mid 
+            else:
+                left = mid + 1
+        return left
 ```
 
 
